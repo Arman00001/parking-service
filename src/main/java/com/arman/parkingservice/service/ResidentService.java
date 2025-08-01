@@ -1,5 +1,6 @@
 package com.arman.parkingservice.service;
 
+import com.arman.parkingservice.dto.PageResponseDto;
 import com.arman.parkingservice.dto.community.CommunityResponse;
 import com.arman.parkingservice.dto.resident.ResidentCreateDto;
 import com.arman.parkingservice.dto.resident.ResidentResponse;
@@ -12,6 +13,7 @@ import com.arman.parkingservice.service.exception.ResourceNotFoundException;
 import com.arman.parkingservice.service.mapper.CommunityMapper;
 import com.arman.parkingservice.service.mapper.ResidentMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -79,5 +81,12 @@ public class ResidentService {
         CommunityResponse communityResponse = communityMapper.mapToResponse(resident.getCommunity());
 
         return residentMapper.mapToResponse(resident, communityResponse);
+    }
+
+
+    public PageResponseDto<ResidentResponse> getResidents(Long communityId) {
+        Page<ResidentResponse> page = residentRepository.findAllByCommunity_Id(communityId);
+
+        return PageResponseDto.from(page);
     }
 }
