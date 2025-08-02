@@ -25,7 +25,7 @@ public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Long> 
         )
         FROM ParkingSpot p
         WHERE p.community.id = :communityId
-            AND :#{#criteria.code} IS NULL OR LOWER(p.code) LIKE LOWER(CONCAT('%',:#{#criteria.code},'%'))
+            AND (:#{#criteria.code} IS NULL OR LOWER(p.code) LIKE LOWER(CONCAT('%',:#{#criteria.code},'%')))
             AND p.id NOT IN (
                 SELECT b.parkingSpot.id
                 FROM Booking b
@@ -49,7 +49,7 @@ public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Long> 
         )
         FROM ParkingSpot p
         WHERE p.community.id = :communityId
-            AND :#{#criteria.code} IS NULL OR LOWER(p.code) LIKE LOWER(CONCAT('%',:#{#criteria.code},'%'))
+            AND (:#{#criteria.code} IS NULL OR LOWER(p.code) LIKE LOWER(CONCAT('%',:#{#criteria.code},'%')))
 """)
     Page<ParkingSpotResponse> findAllByCommunityIdAndCriteria(Long communityId, ParkingSpotSearchCriteria criteria, Pageable pageable);
 }
