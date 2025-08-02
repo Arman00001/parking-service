@@ -25,7 +25,7 @@ public class ResidentMapper {
         ResidentResponse residentResponse = new ResidentResponse();
         residentResponse.setId(resident.getId());
         residentResponse.setFirstName(resident.getFirstName());
-        residentResponse.setLastName(residentResponse.getLastName());
+        residentResponse.setLastName(resident.getLastName());
         residentResponse.setCommunity(communityMapper.mapToResponse(resident.getCommunity()));
 
         return residentResponse;
