@@ -26,8 +26,8 @@ public interface ResidentRepository extends JpaRepository<Resident, Long> {
         )
         FROM Resident r
         WHERE r.community.id = :communityId
-        AND :#{#criteria.firstName} IS NULL OR LOWER(r.firstName) LIKE LOWER(CONCAT('%',:#{#criteria.firstName},'%'))
-        AND :#{#criteria.lastName} IS NULL OR LOWER(r.lastName) LIKE LOWER(CONCAT('%',:#{#criteria.lastName},'%'))
+        AND (:#{#criteria.firstName} IS NULL OR LOWER(r.firstName) LIKE LOWER(CONCAT('%',:#{#criteria.firstName},'%')))
+        AND (:#{#criteria.lastName} IS NULL OR LOWER(r.lastName) LIKE LOWER(CONCAT('%',:#{#criteria.lastName},'%')))
 """)
     Page<ResidentResponse> findAllByCommunityIdAndCriteria(Long communityId, ResidentSearchCriteria criteria,
                                                            Pageable pageable);
