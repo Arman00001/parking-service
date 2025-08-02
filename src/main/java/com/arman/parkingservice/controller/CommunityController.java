@@ -44,6 +44,17 @@ public class CommunityController {
                 .body(communityService.addCommunity(communityCreateDto));
     }
 
+    /**
+     * Retrieve a single community by its ID.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<CommunityResponse> getCommunityById(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(communityService.getCommunityById(id));
+    }
+
+    /**
+     * List all residents in a given community.
+     */
     @GetMapping("/{communityId}/residents")
     public PageResponseDto<ResidentResponse> getResidents(
             @PathVariable("communityId") Long communityId) {
