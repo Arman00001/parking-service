@@ -2,7 +2,6 @@ package com.arman.parkingservice.service;
 
 import com.arman.parkingservice.criteria.ResidentSearchCriteria;
 import com.arman.parkingservice.dto.PageResponseDto;
-import com.arman.parkingservice.dto.community.CommunityResponse;
 import com.arman.parkingservice.dto.resident.ResidentCreateDto;
 import com.arman.parkingservice.dto.resident.ResidentResponse;
 import com.arman.parkingservice.persistence.entity.Community;
@@ -11,7 +10,6 @@ import com.arman.parkingservice.persistence.repository.CommunityRepository;
 import com.arman.parkingservice.persistence.repository.ResidentRepository;
 import com.arman.parkingservice.exception.ResourceAlreadyUsedException;
 import com.arman.parkingservice.exception.ResourceNotFoundException;
-import com.arman.parkingservice.mapper.CommunityMapper;
 import com.arman.parkingservice.mapper.ResidentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,7 +21,6 @@ public class ResidentService {
     private final CommunityRepository communityRepository;
     private final ResidentMapper residentMapper;
     private final ResidentRepository residentRepository;
-    private final CommunityMapper communityMapper;
 
     /**
      * Creates and persists a new Resident in the specified Community.
@@ -55,9 +52,8 @@ public class ResidentService {
 
         Resident resident = residentMapper.mapCreateToResident(residentCreateDto, community);
         Resident savedResident = residentRepository.save(resident);
-        CommunityResponse communityResponse = communityMapper.mapToResponse(community);
 
-        return residentMapper.mapToResponse(savedResident, communityResponse);
+        return residentMapper.mapToResponse(savedResident);
     }
 
 
@@ -77,9 +73,8 @@ public class ResidentService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Resident with the following id not found: " + id)
                 );
-        CommunityResponse communityResponse = communityMapper.mapToResponse(resident.getCommunity());
 
-        return residentMapper.mapToResponse(resident, communityResponse);
+        return residentMapper.mapToResponse(resident);
     }
 
     /**

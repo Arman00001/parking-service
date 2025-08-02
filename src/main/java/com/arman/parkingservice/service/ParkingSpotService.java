@@ -7,7 +7,6 @@ import com.arman.parkingservice.dto.parkingspot.ParkingSpotCreateDto;
 import com.arman.parkingservice.dto.parkingspot.ParkingSpotResponse;
 import com.arman.parkingservice.exception.ResourceAlreadyUsedException;
 import com.arman.parkingservice.exception.ResourceNotFoundException;
-import com.arman.parkingservice.mapper.CommunityMapper;
 import com.arman.parkingservice.mapper.ParkingSpotMapper;
 import com.arman.parkingservice.persistence.entity.Community;
 import com.arman.parkingservice.persistence.entity.ParkingSpot;
@@ -25,7 +24,6 @@ import java.time.LocalDateTime;
 public class ParkingSpotService {
     private final ParkingSpotRepository parkingSpotRepository;
     private final ParkingSpotMapper parkingSpotMapper;
-    private final CommunityMapper communityMapper;
     private final CommunityRepository communityRepository;
 
     /**
@@ -57,9 +55,8 @@ public class ParkingSpotService {
 
         ParkingSpot parkingSpot = parkingSpotMapper.mapCreateToParkingSpot(parkingSpotCreateDto, community);
         ParkingSpot savedSpot = parkingSpotRepository.save(parkingSpot);
-        CommunityResponse communityResponse = communityMapper.mapToResponse(savedSpot.getCommunity());
 
-        return parkingSpotMapper.mapToResponse(savedSpot, communityResponse);
+        return parkingSpotMapper.mapToResponse(savedSpot);
     }
 
     /**
@@ -80,9 +77,8 @@ public class ParkingSpotService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Parking spot with the following id not found: " + id)
                 );
-        CommunityResponse communityResponse = communityMapper.mapToResponse(parkingSpot.getCommunity());
 
-        return parkingSpotMapper.mapToResponse(parkingSpot, communityResponse);
+        return parkingSpotMapper.mapToResponse(parkingSpot);
     }
 
     public PageResponseDto<ParkingSpotResponse> getAllParkingSpotsByCommunity(Long communityId, ParkingSpotSearchCriteria criteria) {

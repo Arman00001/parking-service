@@ -1,14 +1,16 @@
 package com.arman.parkingservice.mapper;
 
-import com.arman.parkingservice.dto.community.CommunityResponse;
 import com.arman.parkingservice.dto.resident.ResidentCreateDto;
 import com.arman.parkingservice.dto.resident.ResidentResponse;
 import com.arman.parkingservice.persistence.entity.Community;
 import com.arman.parkingservice.persistence.entity.Resident;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class ResidentMapper {
+    private final CommunityMapper communityMapper;
     public Resident mapCreateToResident(ResidentCreateDto residentCreateDto, Community community) {
         Resident resident = new Resident();
         resident.setFirstName(residentCreateDto.getFirstName());
@@ -19,12 +21,12 @@ public class ResidentMapper {
         return resident;
     }
 
-    public ResidentResponse mapToResponse(Resident resident, CommunityResponse communityResponse) {
+    public ResidentResponse mapToResponse(Resident resident) {
         ResidentResponse residentResponse = new ResidentResponse();
         residentResponse.setId(resident.getId());
         residentResponse.setFirstName(resident.getFirstName());
         residentResponse.setLastName(residentResponse.getLastName());
-        residentResponse.setCommunity(communityResponse);
+        residentResponse.setCommunity(communityMapper.mapToResponse(resident.getCommunity()));
 
         return residentResponse;
     }
