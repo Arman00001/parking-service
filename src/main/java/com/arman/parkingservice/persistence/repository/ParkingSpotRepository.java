@@ -31,8 +31,8 @@ public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Long> 
                 SELECT b.parkingSpot.id
                 FROM Booking b
                 WHERE b.bookingStatus IN ('RESERVED','ACTIVE')
-                    AND b.startTime <: endTime
-                    AND b.endTime >: startTime
+                    AND b.startTime < :endTime
+                    AND b.endTime > :startTime
         )
 """)
     Page<ParkingSpotResponse> findAllAvailableByCommunityAndCriteria(
