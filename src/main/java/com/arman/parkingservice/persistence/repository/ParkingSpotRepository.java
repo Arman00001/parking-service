@@ -41,4 +41,17 @@ public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Long> 
             LocalDateTime endTime,
             ParkingSpotSearchCriteria criteria,
             Pageable pageable);
+
+    @Query("""
+        SELECT new com.arman.parkingservice.dto.parkingspot.ParkingSpotResponse(
+            p.id,
+            p.code,
+            p.community,
+            p.status
+        )
+        FROM ParkingSpot p
+        WHERE p.community.id = :communityId
+            AND :#{#criteria.code} IS NULL OR LOWER(p.code) LIKE LOWER(CONCAT('%',:#{#criteria.code},'%'))
+""")
+    Page<ParkingSpotResponse> findAllByCommunityIdAndCriteria(Long communityId, ParkingSpotSearchCriteria criteria, Pageable pageable);
 }

@@ -85,7 +85,11 @@ public class ParkingSpotService {
         return parkingSpotMapper.mapToResponse(parkingSpot, communityResponse);
     }
 
-    public PageResponseDto<ParkingSpotResponse> getAllParkingSpotsByCommunity(Long communityId) {
+    public PageResponseDto<ParkingSpotResponse> getAllParkingSpotsByCommunity(Long communityId, ParkingSpotSearchCriteria criteria) {
+        Page<ParkingSpotResponse> page = parkingSpotRepository
+                .findAllByCommunityIdAndCriteria(communityId,criteria,criteria.buildPageRequest());
+
+        return PageResponseDto.from(page);
     }
 
     public PageResponseDto<ParkingSpotResponse> getAvailableSpots(
