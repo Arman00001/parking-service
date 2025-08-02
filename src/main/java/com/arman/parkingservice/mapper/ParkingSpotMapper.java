@@ -2,7 +2,6 @@ package com.arman.parkingservice.mapper;
 
 import com.arman.parkingservice.dto.parkingspot.ParkingSpotCreateDto;
 import com.arman.parkingservice.dto.parkingspot.ParkingSpotResponse;
-import com.arman.parkingservice.enums.ParkingSpotStatus;
 import com.arman.parkingservice.persistence.entity.Community;
 import com.arman.parkingservice.persistence.entity.ParkingSpot;
 import lombok.RequiredArgsConstructor;

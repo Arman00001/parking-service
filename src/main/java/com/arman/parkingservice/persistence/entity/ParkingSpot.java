@@ -1,6 +1,5 @@
 package com.arman.parkingservice.persistence.entity;
 
-import com.arman.parkingservice.enums.ParkingSpotStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
