@@ -1,4 +1,4 @@
-package com.arman.parkingservice.service.exception;
+package com.arman.parkingservice.exception;
 
 public class BaseException extends RuntimeException {
     public BaseException(String message) {

@@ -1,4 +1,4 @@
-package com.arman.parkingservice.service.mapper;
+package com.arman.parkingservice.mapper;
 
 import com.arman.parkingservice.dto.community.CommunityResponse;
 import com.arman.parkingservice.persistence.entity.Community;
