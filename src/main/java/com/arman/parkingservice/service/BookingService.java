@@ -32,8 +32,9 @@ public class BookingService {
     private final BookingMapper bookingMapper;
 
     public BookingResponse addBooking(BookingRequestDto bookingRequestDto) {
-        if (bookingRequestDto.getStartTime().isAfter(bookingRequestDto.getEndTime())) {
-            throw new IllegalArgumentException("Start time cannot come after end time");
+        if (bookingRequestDto.getStartTime().isAfter(bookingRequestDto.getEndTime())
+        || bookingRequestDto.getStartTime().isEqual(bookingRequestDto.getEndTime())) {
+            throw new IllegalArgumentException("Start time cannot equal or come after end time");
         }
 
         Resident resident = residentRepository.findById(bookingRequestDto.getResidentId())
