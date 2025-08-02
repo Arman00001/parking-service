@@ -139,7 +139,7 @@ public class BookingService {
         if (booking.getBookingStatus().equals(BookingStatus.CANCELLED)
                 || booking.getBookingStatus().equals(BookingStatus.COMPLETED)
                 || booking.getBookingStatus().equals(BookingStatus.ACTIVE)) {
-            throw new ResourceAlreadyUsedException("Booking with the following id is not unavailable anymore: " + id);
+            throw new ResourceAlreadyUsedException("Booking with the following id is not available anymore: " + id);
         }
 
         LocalDateTime now = LocalDateTime.now();
