@@ -32,8 +32,7 @@ public class ResidentService {
      * a Resident with the same email already exists in that Community; if so,
      * a {@link ResourceAlreadyUsedException} is thrown.
      *
-     * @param residentCreateDto the data transfer object containing the new resident’s
-     *                          first name, last name, email, and the community ID
+     * @param residentCreateDto the data transfer object containing the new resident’s data
      * @return a {@link ResidentResponse} containing the saved resident’s details
      * @throws ResourceNotFoundException    if no Community exists with the given ID
      * @throws ResourceAlreadyUsedException if a Resident with the same email already
@@ -66,8 +65,7 @@ public class ResidentService {
      * <p>
      * Looks up the {@link Resident} entity by the given ID; if no resident
      * is found, throws a {@link ResourceNotFoundException}.  Maps the
-     * found entity into a {@link ResidentResponse}, including its
-     * {@link CommunityResponse}.
+     * found entity into a {@link ResidentResponse}
      *
      * @param id the unique identifier of the resident
      * @return a {@link ResidentResponse} containing the resident’s details
