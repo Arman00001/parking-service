@@ -2,6 +2,7 @@ package com.arman.parkingservice.dto.resident;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +19,6 @@ public class ResidentCreateDto {
     @Email
     private String email;
 
-    @NotBlank
+    @NotNull
     private Long communityId;
 }
