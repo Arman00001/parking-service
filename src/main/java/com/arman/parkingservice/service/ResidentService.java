@@ -76,7 +76,7 @@ public class ResidentService {
     public ResidentResponse getResidentById(Long id) {
         Resident resident = residentRepository.findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("A resident with the following id not found: " + id)
+                        new ResourceNotFoundException("Resident with the following id not found: " + id)
                 );
         CommunityResponse communityResponse = communityMapper.mapToResponse(resident.getCommunity());
 
