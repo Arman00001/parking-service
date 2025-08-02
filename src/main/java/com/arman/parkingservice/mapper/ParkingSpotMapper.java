@@ -19,7 +19,6 @@ public class ParkingSpotMapper {
         ParkingSpot parkingSpot = new ParkingSpot();
         parkingSpot.setCode(parkingSpotCreateDto.getCode());
         parkingSpot.setCommunity(community);
-        parkingSpot.setStatus(ParkingSpotStatus.AVAILABLE);
 
         return parkingSpot;
     }
@@ -29,7 +28,6 @@ public class ParkingSpotMapper {
         parkingSpotResponse.setId(parkingSpot.getId());
         parkingSpotResponse.setCode(parkingSpot.getCode());
         parkingSpotResponse.setCommunity(communityMapper.mapToResponse(parkingSpot.getCommunity()));
-        parkingSpotResponse.setStatus(parkingSpot.getStatus());
 
         return parkingSpotResponse;
     }

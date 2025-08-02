@@ -16,14 +16,10 @@ public class ParkingSpot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "code", unique = true, nullable = false)
+    @Column(name = "code", nullable = false)
     private String code;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "community_id", nullable = false)
     private Community community;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private ParkingSpotStatus status;
 }

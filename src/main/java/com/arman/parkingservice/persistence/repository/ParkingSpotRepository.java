@@ -21,8 +21,7 @@ public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Long> 
         SELECT new com.arman.parkingservice.dto.parkingspot.ParkingSpotResponse(
             p.id,
             p.code,
-            p.community,
-            p.status
+            p.community
         )
         FROM ParkingSpot p
         WHERE p.community.id = :communityId
@@ -46,8 +45,7 @@ public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Long> 
         SELECT new com.arman.parkingservice.dto.parkingspot.ParkingSpotResponse(
             p.id,
             p.code,
-            p.community,
-            p.status
+            p.community
         )
         FROM ParkingSpot p
         WHERE p.community.id = :communityId
