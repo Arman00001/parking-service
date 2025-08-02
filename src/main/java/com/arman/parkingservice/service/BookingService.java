@@ -131,5 +131,31 @@ public class BookingService {
         }
     }
 
+    public BookingResponse park(Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Booking with the following id not found: " + id)
+                );
+        if (booking.getBookingStatus().equals(BookingStatus.CANCELLED)
+                || booking.getBookingStatus().equals(BookingStatus.COMPLETED)
+                || booking.getBookingStatus().equals(BookingStatus.ACTIVE)) {
+            throw new ResourceAlreadyUsedException("Booking with the following id is not unavailable anymore: " + id);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isBefore(booking.getStartTime())) {
+            throw new IllegalArgumentException("The booking cannot be accessed, as the period did not start yet");
+        } else if (now.isAfter(booking.getEndTime())) {
+            booking.setBookingStatus(BookingStatus.CANCELLED);
+            bookingRepository.save(booking);
+            throw new IllegalArgumentException("The booking cannot be accessed, as the period did has ended");
+        }
+
+        booking.setBookingStatus(BookingStatus.ACTIVE);
+        Booking savedBook = bookingRepository.save(booking);
+
+        return bookingMapper.mapToResponse(savedBook);
+    }
+
 }
 

@@ -33,4 +33,14 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getBookingById(id));
     }
 
+    /**
+     * Activate a reservation (park the car) when the resident arrives
+     */
+    @PutMapping("/{id}/park")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseEntity<BookingResponse> park(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(bookingService.park(id));
+    }
+
+
 }
