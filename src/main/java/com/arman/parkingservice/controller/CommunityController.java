@@ -9,6 +9,7 @@ import com.arman.parkingservice.dto.community.CommunityResponse;
 import com.arman.parkingservice.dto.parkingspot.ParkingSpotResponse;
 import com.arman.parkingservice.dto.resident.ResidentResponse;
 import com.arman.parkingservice.service.CommunityService;
+import com.arman.parkingservice.service.ParkingSpotService;
 import com.arman.parkingservice.service.ResidentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -69,5 +70,21 @@ public class CommunityController {
     public PageResponseDto<ParkingSpotResponse> getAllParkingSpots(
             @PathVariable("communityId") Long communityId) {
         return residentService.getResidents(communityId);
+    }
+
+    /**
+     * List all available spots in a given community
+     */
+    @GetMapping("/{communityId}/spots/available")
+    public PageResponseDto<ParkingSpotResponse> getAvailableSpots(
+            @PathVariable("communityId") Long communityId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime endTime,
+            ParkingSpotSearchCriteria criteria
+    ){
+
+        return parkingSpotService.getAvailableSpots(communityId,startTime,endTime,criteria);
     }
 }
