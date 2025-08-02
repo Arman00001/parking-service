@@ -33,7 +33,7 @@ public class BookingService {
 
     public BookingResponse addBooking(BookingRequestDto bookingRequestDto) {
         if (bookingRequestDto.getStartTime().isAfter(bookingRequestDto.getEndTime())
-        || bookingRequestDto.getStartTime().isEqual(bookingRequestDto.getEndTime())) {
+                || bookingRequestDto.getStartTime().isEqual(bookingRequestDto.getEndTime())) {
             throw new IllegalArgumentException("Start time cannot equal or come after end time");
         }
 
