@@ -113,7 +113,19 @@ public class BookingService {
                     .findByResident_Id(residentId, criteria.buildPageRequest());
         };
 
-        return PageResponseDto.from(pageBooking.map(bookingMapper::mapToResponse));
+        return PageResponseDto.from(pageBooking.map(booking -> {
+            if (booking.getBookingStatus().equals(BookingStatus.CANCELLED)) return booking;
+            else if (now.isAfter(booking.getEndTime())) {
+                if (booking.getBookingStatus().equals(BookingStatus.RESERVED)) {
+                    booking.setBookingStatus(BookingStatus.CANCELLED);
+                    bookingRepository.save(booking);
+                } else if (booking.getBookingStatus().equals(BookingStatus.ACTIVE)) {
+                    booking.setBookingStatus(BookingStatus.COMPLETED);
+                    bookingRepository.save(booking);
+                }
+            }
+            return booking;
+        }).map(bookingMapper::mapToResponse));
     }
 
     private void checkOverlap(ParkingSpot spot, LocalDateTime start, LocalDateTime end) {
