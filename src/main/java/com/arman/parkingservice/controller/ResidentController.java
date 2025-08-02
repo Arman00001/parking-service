@@ -16,6 +16,9 @@ public class ResidentController {
     private final ResidentService residentService;
 
 
+    /**
+     * Create a new resident.
+     */
     @PostMapping
     public ResponseEntity<ResidentResponse> addResident(@RequestBody @Valid ResidentCreateDto residentCreateDto){
         return ResponseEntity
@@ -23,6 +26,9 @@ public class ResidentController {
                 .body(residentService.addResident(residentCreateDto));
     }
 
+    /**
+     * Retrieve a resident by its ID.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ResidentResponse> getResidentById(@PathVariable("id") Long id){
         return ResponseEntity.ok(residentService.getResidentById(id));
