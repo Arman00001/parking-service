@@ -34,9 +34,9 @@ public class Booking {
     @Column(name = "booking_status", nullable = false)
     private BookingStatus bookingStatus;
 
-    @Column(name = "actual_start_date", nullable = false)
+    @Column(name = "actual_start_date")
     private LocalDateTime actualStartTime;
 
-    @Column(name = "actual_end_date", nullable = false)
+    @Column(name = "actual_end_date")
     private LocalDateTime actualEndTime;
 }
