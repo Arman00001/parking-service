@@ -12,6 +12,7 @@ import com.arman.parkingservice.service.CommunityService;
 import com.arman.parkingservice.service.ParkingSpotService;
 import com.arman.parkingservice.service.ResidentService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Future;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -82,9 +83,9 @@ public class CommunityController {
     @GetMapping("/{communityId}/spots/available")
     public PageResponseDto<ParkingSpotResponse> getAvailableSpots(
             @PathVariable("communityId") Long communityId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            @RequestParam @Future @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             LocalDateTime startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            @RequestParam @Future @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             LocalDateTime endTime,
             ParkingSpotSearchCriteria criteria
     ){
