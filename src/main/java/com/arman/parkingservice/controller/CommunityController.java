@@ -29,6 +29,9 @@ public class CommunityController {
     private final ParkingSpotService parkingSpotService;
 
 
+    /**
+     * Retrieve a list of communities by given criteria
+     */
     @GetMapping
     public PageResponseDto<CommunityResponse> getCommunities(CommunitySearchCriteria criteria) {
         return communityService.getCommunities(criteria);
