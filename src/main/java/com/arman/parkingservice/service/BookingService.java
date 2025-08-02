@@ -1,7 +1,10 @@
 package com.arman.parkingservice.service;
 
+import com.arman.parkingservice.criteria.SearchCriteria;
+import com.arman.parkingservice.dto.PageResponseDto;
 import com.arman.parkingservice.dto.booking.BookingRequestDto;
 import com.arman.parkingservice.dto.booking.BookingResponse;
+import com.arman.parkingservice.enums.BookingPeriod;
 import com.arman.parkingservice.enums.BookingStatus;
 import com.arman.parkingservice.exception.ResourceAlreadyUsedException;
 import com.arman.parkingservice.exception.ResourceNotFoundException;
@@ -13,10 +16,12 @@ import com.arman.parkingservice.persistence.repository.BookingRepository;
 import com.arman.parkingservice.persistence.repository.ParkingSpotRepository;
 import com.arman.parkingservice.persistence.repository.ResidentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +32,10 @@ public class BookingService {
     private final BookingMapper bookingMapper;
 
     public BookingResponse addBooking(BookingRequestDto bookingRequestDto) {
+        if (bookingRequestDto.getStartTime().isAfter(bookingRequestDto.getEndTime())) {
+            throw new IllegalArgumentException("Start time cannot come after end time");
+        }
+
         Resident resident = residentRepository.findById(bookingRequestDto.getResidentId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Resident with the following id not found: "
@@ -54,6 +63,58 @@ public class BookingService {
         );
     }
 
+    public BookingResponse getBookingById(Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Booking with the following id not found: " + id)
+                );
+
+        return bookingMapper.mapToResponse(booking);
+    }
+
+    public PageResponseDto<BookingResponse> getAllBookingsByResident(
+            Long residentId,
+            BookingPeriod period,
+            SearchCriteria criteria
+    ) {
+        LocalDateTime now = LocalDateTime.now();
+
+        Page<Booking> pageBooking = switch (period) {
+            case PAST -> bookingRepository
+                    .findByResident_IdAndEndTimeBeforeAndBookingStatus(
+                            residentId,
+                            now,
+                            BookingStatus.COMPLETED,
+                            criteria.buildPageRequest()
+                    );
+
+            case CURRENT -> bookingRepository
+                    .findCurrentByResident(
+                            residentId,
+                            now,
+                            List.of(BookingStatus.RESERVED, BookingStatus.ACTIVE),
+                            criteria.buildPageRequest()
+                    );
+            case FUTURE -> bookingRepository
+                    .findByResident_idAndStartTimeAfterAndBookingStatus(
+                            residentId,
+                            now,
+                            BookingStatus.RESERVED,
+                            criteria.buildPageRequest()
+                    );
+            case CANCELLED -> bookingRepository
+                    .findByResident_IdAndBookingStatus(
+                            residentId,
+                            BookingStatus.CANCELLED,
+                            criteria.buildPageRequest()
+                    );
+            case ALL -> bookingRepository
+                    .findByResident_Id(residentId, criteria.buildPageRequest());
+        };
+
+        return PageResponseDto.from(pageBooking.map(bookingMapper::mapToResponse));
+    }
+
     private void checkOverlap(ParkingSpot spot, LocalDateTime start, LocalDateTime end) {
         boolean clash = bookingRepository.existsByParkingSpotAndBookingStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
                 spot,
@@ -68,5 +129,6 @@ public class BookingService {
             );
         }
     }
+
 }
 
