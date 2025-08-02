@@ -57,6 +57,16 @@ public class CommunityController {
      */
     @GetMapping("/{communityId}/residents")
     public PageResponseDto<ResidentResponse> getResidents(
+            @PathVariable("communityId") Long communityId,
+            ResidentSearchCriteria criteria) {
+        return residentService.getResidentsByCommunity(communityId, criteria);
+    }
+
+    /**
+     * List all parking spots in a given community.
+     */
+    @GetMapping("/{communityId}/spots")
+    public PageResponseDto<ParkingSpotResponse> getAllParkingSpots(
             @PathVariable("communityId") Long communityId) {
         return residentService.getResidents(communityId);
     }

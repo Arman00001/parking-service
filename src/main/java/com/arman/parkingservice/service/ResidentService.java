@@ -1,5 +1,6 @@
 package com.arman.parkingservice.service;
 
+import com.arman.parkingservice.criteria.ResidentSearchCriteria;
 import com.arman.parkingservice.dto.PageResponseDto;
 import com.arman.parkingservice.dto.community.CommunityResponse;
 import com.arman.parkingservice.dto.resident.ResidentCreateDto;
@@ -8,10 +9,10 @@ import com.arman.parkingservice.persistence.entity.Community;
 import com.arman.parkingservice.persistence.entity.Resident;
 import com.arman.parkingservice.persistence.repository.CommunityRepository;
 import com.arman.parkingservice.persistence.repository.ResidentRepository;
-import com.arman.parkingservice.service.exception.ResourceAlreadyUsedException;
-import com.arman.parkingservice.service.exception.ResourceNotFoundException;
-import com.arman.parkingservice.service.mapper.CommunityMapper;
-import com.arman.parkingservice.service.mapper.ResidentMapper;
+import com.arman.parkingservice.exception.ResourceAlreadyUsedException;
+import com.arman.parkingservice.exception.ResourceNotFoundException;
+import com.arman.parkingservice.mapper.CommunityMapper;
+import com.arman.parkingservice.mapper.ResidentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -81,9 +82,23 @@ public class ResidentService {
         return residentMapper.mapToResponse(resident, communityResponse);
     }
 
-
-    public PageResponseDto<ResidentResponse> getResidents(Long communityId) {
-        Page<ResidentResponse> page = residentRepository.findAllByCommunity_Id(communityId);
+    /**
+     * Retrieves a paginated list of residents for a given community, applying
+     * optional search and sorting criteria.
+     * <p>
+     * Delegates to the repository’s {@code findAllByCommunityIdAndCriteria} method,
+     * passing along the community ID, and the {@link ResidentSearchCriteria}.
+     * Wraps the resulting {@link Page} of {@link ResidentResponse} DTOs into a {@link PageResponseDto}.
+     *
+     * @param communityId the ID of the community whose residents should be fetched
+     * @param criteria    the search criteria containing pagination (page/size),
+     *                    sorting (field and direction), and optional filters
+     * @return a {@link PageResponseDto} containing the requested page of
+     * {@link ResidentResponse} objects and pagination metadata
+     */
+    public PageResponseDto<ResidentResponse> getResidentsByCommunity(Long communityId, ResidentSearchCriteria criteria) {
+        Page<ResidentResponse> page = residentRepository
+                .findAllByCommunityIdAndCriteria(communityId, criteria, criteria.buildPageRequest());
 
         return PageResponseDto.from(page);
     }
