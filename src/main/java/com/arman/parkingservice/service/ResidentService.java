@@ -80,13 +80,9 @@ public class ResidentService {
     /**
      * Retrieves a paginated list of residents for a given community, applying
      * optional search and sorting criteria.
-     * <p>
-     * Delegates to the repository’s {@code findAllByCommunityIdAndCriteria} method,
-     * passing along the community ID, and the {@link ResidentSearchCriteria}.
-     * Wraps the resulting {@link Page} of {@link ResidentResponse} DTOs into a {@link PageResponseDto}.
      *
      * @param communityId the ID of the community whose residents should be fetched
-     * @param criteria    the search criteria containing pagination (page/size),
+     * @param criteria    the search criteria containing pagination,
      *                    sorting (field and direction), and optional filters
      * @return a {@link PageResponseDto} containing the requested page of
      * {@link ResidentResponse} objects and pagination metadata

@@ -34,8 +34,8 @@ public class ParkingSpotService {
      *
      * @param parkingSpotCreateDto the DTO containing the new spot’s code and
      *                             the ID of the community it belongs to
-     * @return a {@link ParkingSpotResponse} representing the saved spot,
-     *         including nested {@link CommunityResponse}
+     * @return A {@link ParkingSpotResponse} representing the saved spot,
+     * including nested {@link CommunityResponse}
      * @throws ResourceNotFoundException    if no Community exists with the given ID
      * @throws ResourceAlreadyUsedException if a spot with the same code already
      *                                      exists in that Community
@@ -67,10 +67,9 @@ public class ParkingSpotService {
      * a {@link ParkingSpotResponse}, including its associated community.
      *
      * @param id the unique identifier of the parking spot to retrieve
-     * @return a {@link ParkingSpotResponse} containing the spot’s code,
-     *         status, and community information
+     * @return A {@link ParkingSpotResponse} containing the spot’s code,
+     * status, and community information
      * @throws ResourceNotFoundException if no ParkingSpot exists with the given ID
-     *
      */
     public ParkingSpotResponse getParkingSpotById(Long id) {
         ParkingSpot parkingSpot = parkingSpotRepository.findById(id)
@@ -81,13 +80,35 @@ public class ParkingSpotService {
         return parkingSpotMapper.mapToResponse(parkingSpot);
     }
 
+    /**
+     * Retrieves a paginated list of parking spots for a given community, applying
+     * optional search and sorting criteria.
+     *
+     * @param communityId the ID of the community parking spots of which should be fetched
+     * @param criteria    the search criteria containing pagination,
+     *                    sorting (field and direction), and optional filters
+     * @return A {@link PageResponseDto} containing the requested page of
+     * {@link ParkingSpotResponse} objects and pagination metadata
+     */
     public PageResponseDto<ParkingSpotResponse> getAllParkingSpotsByCommunity(Long communityId, ParkingSpotSearchCriteria criteria) {
         Page<ParkingSpotResponse> page = parkingSpotRepository
-                .findAllByCommunityIdAndCriteria(communityId,criteria,criteria.buildPageRequest());
+                .findAllByCommunityIdAndCriteria(communityId, criteria, criteria.buildPageRequest());
 
         return PageResponseDto.from(page);
     }
 
+    /**
+     * Retrieves a paginated list of available parking spots for a given community in a specified
+     * time slot, applying optional search and sorting criteria.
+     *
+     * @param communityId the ID of the community parking spots of which should be fetched
+     * @param startTime the given start time of time slot
+     * @param endTime the given end time of time slot
+     * @param criteria    the search criteria containing pagination,
+     *                    sorting (field and direction), and optional filters
+     * @return A {@link PageResponseDto} containing the requested page of
+     * {@link ParkingSpotResponse} objects and pagination metadata
+     */
     public PageResponseDto<ParkingSpotResponse> getAvailableSpots(
             Long communityId,
             LocalDateTime startTime,
