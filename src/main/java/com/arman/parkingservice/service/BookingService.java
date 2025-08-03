@@ -6,8 +6,7 @@ import com.arman.parkingservice.dto.booking.BookingRequestDto;
 import com.arman.parkingservice.dto.booking.BookingResponse;
 import com.arman.parkingservice.enums.BookingPeriod;
 import com.arman.parkingservice.enums.BookingStatus;
-import com.arman.parkingservice.exception.ResourceAlreadyUsedException;
-import com.arman.parkingservice.exception.ResourceNotFoundException;
+import com.arman.parkingservice.exception.*;
 import com.arman.parkingservice.mapper.BookingMapper;
 import com.arman.parkingservice.persistence.entity.Booking;
 import com.arman.parkingservice.persistence.entity.ParkingSpot;
@@ -185,7 +184,7 @@ public class BookingService {
                         new ResourceNotFoundException("Booking with the following id not found: " + id)
                 );
         if (!booking.getBookingStatus().equals(BookingStatus.RESERVED)) {
-            throw new ResourceAlreadyUsedException("Booking " + id + " cannot be parked because its status is "
+            throw new BookingNotReservedException("Booking " + id + " cannot be parked because its status is "
                     + booking.getBookingStatus());
         }
 
@@ -253,7 +252,7 @@ public class BookingService {
         }
 
         if (!booking.getBookingStatus().equals(BookingStatus.RESERVED)) {
-            throw new IllegalStateException("Booking " + id + " cannot be cancelled because its status is "
+            throw new BookingNotReservedException("Booking " + id + " cannot be cancelled because its status is "
                     + booking.getBookingStatus());
         }
 
@@ -265,11 +264,11 @@ public class BookingService {
 
     private void validateWithinBookingWindow(LocalDateTime now, Booking booking) {
         if (now.isBefore(booking.getStartTime())) {
-            throw new IllegalArgumentException("The booking cannot be accessed, as the period did not start yet");
+            throw new BookingNotStartedException("The booking cannot be accessed, as the period did not start yet");
         } else if (now.isAfter(booking.getEndTime())) {
             booking.setBookingStatus(BookingStatus.CANCELLED);
             bookingRepository.save(booking);
-            throw new IllegalArgumentException("The booking cannot be accessed, as the period has ended");
+            throw new BookingExpiredException("The booking cannot be accessed, as the period has ended");
         }
     }
 
