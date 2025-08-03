@@ -163,6 +163,7 @@ public class BookingService {
         }
 
         booking.setBookingStatus(BookingStatus.ACTIVE);
+        booking.setActualStartTime(now);
         Booking savedBook = bookingRepository.save(booking);
 
         return bookingMapper.mapToResponse(savedBook);
