@@ -148,10 +148,9 @@ public class BookingService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Booking with the following id not found: " + id)
                 );
-        if (booking.getBookingStatus().equals(BookingStatus.CANCELLED)
-                || booking.getBookingStatus().equals(BookingStatus.COMPLETED)
-                || booking.getBookingStatus().equals(BookingStatus.ACTIVE)) {
-            throw new ResourceAlreadyUsedException("Booking with the following id is not available anymore: " + id);
+        if (!booking.getBookingStatus().equals(BookingStatus.RESERVED)) {
+            throw new ResourceAlreadyUsedException("Booking " + id + " cannot be parked because its status is "
+                    + booking.getBookingStatus());
         }
 
         LocalDateTime now = LocalDateTime.now();
