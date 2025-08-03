@@ -14,6 +14,7 @@ import com.arman.parkingservice.persistence.entity.Resident;
 import com.arman.parkingservice.persistence.repository.BookingRepository;
 import com.arman.parkingservice.persistence.repository.ParkingSpotRepository;
 import com.arman.parkingservice.persistence.repository.ResidentRepository;
+import com.arman.parkingservice.exception.BookingEndedException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -40,15 +41,15 @@ public class BookingService {
      *
      * @param bookingRequestDto DTO containing detailed information about the booking
      * @return The saved {@link BookingResponse} with booking details
-     * @throws IllegalArgumentException     if given incorrect time range or if resident
-     *                                      is not from the community
+     * @throws BookingCommunityMismatchException if resident is not from the community
+     * @throws InvalidBookingPeriodException     if given incorrect time range or
      * @throws ResourceNotFoundException    if given incorrect IDs'
      * @throws ResourceAlreadyUsedException if the given time slot has bookings
      */
     public BookingResponse addBooking(BookingRequestDto bookingRequestDto) {
         if (bookingRequestDto.getStartTime().isAfter(bookingRequestDto.getEndTime())
                 || bookingRequestDto.getStartTime().isEqual(bookingRequestDto.getEndTime())) {
-            throw new IllegalArgumentException("Start time cannot equal or come after end time");
+            throw new InvalidBookingPeriodException("Start time cannot equal or come after end time");
         }
 
         Resident resident = residentRepository.findById(bookingRequestDto.getResidentId())
@@ -71,7 +72,7 @@ public class BookingService {
 
             return bookingMapper.mapToResponse(savedBooking);
         }
-        throw new IllegalArgumentException(
+        throw new BookingCommunityMismatchException(
                 "Resident " + resident.getId() +
                         " is not part of community " +
                         spot.getCommunity().getId()
@@ -175,7 +176,8 @@ public class BookingService {
      * @return The updated {@link BookingResponse}
      * @throws ResourceNotFoundException    if no Booking is found with the given ID
      * @throws ResourceAlreadyUsedException if the booking is not in RESERVED state
-     * @throws IllegalStateException        if called before startTime or after endTime
+     * @throws BookingNotStartedException        if called before startTime
+     * @throws BookingExpiredException  if called after endTime
      */
     @Transactional
     public BookingResponse park(Long id) {
@@ -208,7 +210,7 @@ public class BookingService {
      * @param id the booking's ID
      * @return Updated {@link BookingResponse}
      * @throws ResourceNotFoundException if no Booking is found with the given ID
-     * @throws IllegalStateException     if booking is not ACTIVE, or called
+     * @throws BookingNotActiveException     if booking is not ACTIVE, or called
      *                                   before startTime or after endTime
      */
     @Transactional
@@ -218,7 +220,7 @@ public class BookingService {
                         new ResourceNotFoundException("Booking with the following id not found: " + id)
                 );
         if (!booking.getBookingStatus().equals(BookingStatus.ACTIVE)) {
-            throw new IllegalStateException("Booking " + id + " cannot be released because its status is "
+            throw new BookingNotActiveException("Booking " + id + " cannot be released because its status is "
                     + booking.getBookingStatus());
         }
 
@@ -240,7 +242,7 @@ public class BookingService {
      * @param id the booking’s ID
      * @return The updated {@link BookingResponse}
      * @throws ResourceNotFoundException if no Booking is found with the given ID
-     * @throws IllegalStateException     if booking is already CANCELLED or not in RESERVED state
+     * @throws BookingEndedException     if booking is already CANCELLED or not in RESERVED state
      */
     public BookingResponse cancel(Long id) {
         Booking booking = bookingRepository.findById(id)
@@ -248,7 +250,7 @@ public class BookingService {
                         new ResourceNotFoundException("Booking with the following id not found: " + id)
                 );
         if (booking.getBookingStatus().equals(BookingStatus.CANCELLED)) {
-            throw new IllegalStateException("Booking " + id + " is already cancelled");
+            throw new BookingEndedException("Booking " + id + " is already cancelled");
         }
 
         if (!booking.getBookingStatus().equals(BookingStatus.RESERVED)) {
