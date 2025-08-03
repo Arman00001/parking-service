@@ -15,6 +15,7 @@ import com.arman.parkingservice.persistence.entity.Resident;
 import com.arman.parkingservice.persistence.repository.BookingRepository;
 import com.arman.parkingservice.persistence.repository.ParkingSpotRepository;
 import com.arman.parkingservice.persistence.repository.ResidentRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,20 @@ public class BookingService {
     private final ParkingSpotRepository parkingSpotRepository;
     private final BookingMapper bookingMapper;
 
+    /**
+     * Creates a new booking for the given resident and parking spot
+     * <p>
+     * Validates the resident and parking spot, checks for collisions
+     * and if successful, creates a booking.
+     * </p>
+     *
+     * @param bookingRequestDto DTO containing detailed information about the booking
+     * @return The saved {@link BookingResponse} with booking details
+     * @throws IllegalArgumentException     if given incorrect time range or if resident
+     *                                      is not from the community
+     * @throws ResourceNotFoundException    if given incorrect IDs'
+     * @throws ResourceAlreadyUsedException if the given time slot has bookings
+     */
     public BookingResponse addBooking(BookingRequestDto bookingRequestDto) {
         if (bookingRequestDto.getStartTime().isAfter(bookingRequestDto.getEndTime())
                 || bookingRequestDto.getStartTime().isEqual(bookingRequestDto.getEndTime())) {
@@ -64,6 +79,13 @@ public class BookingService {
         );
     }
 
+    /**
+     * Fetches a book by its unique identifier
+     *
+     * @param id the booking's ID
+     * @return {@link BookingResponse} with booking details
+     * @throws ResourceNotFoundException if no {@link Booking} found with the given ID
+     */
     public BookingResponse getBookingById(Long id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() ->
@@ -73,6 +95,20 @@ public class BookingService {
         return bookingMapper.mapToResponse(booking);
     }
 
+    /**
+     * Retrieves a paginated list of bookings by the resident, given the period
+     * <p>
+     * Depending on {@code period}, returns past(COMPLETED), current(RESERVED or ACTIVE),
+     * future(RESERVED), cancelled or all bookings. Automatically updates every booking's status
+     * if needed.
+     * </p>
+     *
+     * @param residentId the resident's ID
+     * @param period     the given period
+     * @param criteria   given criteria for pagination
+     * @return {@link PageResponseDto}&lt;{@link BookingResponse}&gt; containing the
+     * requested page of bookings and pagination metadata
+     */
     public PageResponseDto<BookingResponse> getAllBookingsByResident(
             Long residentId,
             BookingPeriod period,
@@ -128,6 +164,115 @@ public class BookingService {
         }).map(bookingMapper::mapToResponse));
     }
 
+
+    /**
+     * Marks a RESERVED booking as ACTIVE (parked), if called during its window
+     * <p>
+     * Validates booking's existence and it being in state RESERVED, also checking the current time
+     * being between startTime and endTime. Updates status to ACTIVE and records actualStartTime
+     * </p>
+     *
+     * @param id the booking's ID
+     * @return The updated {@link BookingResponse}
+     * @throws ResourceNotFoundException    if no Booking is found with the given ID
+     * @throws ResourceAlreadyUsedException if the booking is not in RESERVED state
+     * @throws IllegalStateException        if called before startTime or after endTime
+     */
+    @Transactional
+    public BookingResponse park(Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Booking with the following id not found: " + id)
+                );
+        if (!booking.getBookingStatus().equals(BookingStatus.RESERVED)) {
+            throw new ResourceAlreadyUsedException("Booking " + id + " cannot be parked because its status is "
+                    + booking.getBookingStatus());
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        validateWithinBookingWindow(now, booking);
+
+        booking.setBookingStatus(BookingStatus.ACTIVE);
+        booking.setActualStartTime(now);
+        Booking savedBook = bookingRepository.save(booking);
+
+        return bookingMapper.mapToResponse(savedBook);
+    }
+
+    /**
+     * Completes an ACTIVE booking if called during it's time window
+     * <p>
+     * Validates booking's existence and current time being in given timeframe.
+     * Updates status to COMPLETED and records actualEndTime.
+     * </p>
+     *
+     * @param id the booking's ID
+     * @return Updated {@link BookingResponse}
+     * @throws ResourceNotFoundException if no Booking is found with the given ID
+     * @throws IllegalStateException     if booking is not ACTIVE, or called
+     *                                   before startTime or after endTime
+     */
+    @Transactional
+    public BookingResponse release(Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Booking with the following id not found: " + id)
+                );
+        if (!booking.getBookingStatus().equals(BookingStatus.ACTIVE)) {
+            throw new IllegalStateException("Booking " + id + " cannot be released because its status is "
+                    + booking.getBookingStatus());
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        validateWithinBookingWindow(now, booking);
+
+        booking.setBookingStatus(BookingStatus.COMPLETED);
+        booking.setActualEndTime(now);
+        Booking savedBook = bookingRepository.save(booking);
+
+        return bookingMapper.mapToResponse(savedBook);
+    }
+
+    /**
+     * Cancels a RESERVED booking.
+     * <p>
+     * Validates that the booking exists and is in state RESERVED. Updates status to CANCELLED.
+     *
+     * @param id the booking’s ID
+     * @return The updated {@link BookingResponse}
+     * @throws ResourceNotFoundException if no Booking is found with the given ID
+     * @throws IllegalStateException     if booking is already CANCELLED or not in RESERVED state
+     */
+    public BookingResponse cancel(Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Booking with the following id not found: " + id)
+                );
+        if (booking.getBookingStatus().equals(BookingStatus.CANCELLED)) {
+            throw new IllegalStateException("Booking " + id + " is already cancelled");
+        }
+
+        if (!booking.getBookingStatus().equals(BookingStatus.RESERVED)) {
+            throw new IllegalStateException("Booking " + id + " cannot be cancelled because its status is "
+                    + booking.getBookingStatus());
+        }
+
+        booking.setBookingStatus(BookingStatus.CANCELLED);
+        Booking savedBook = bookingRepository.save(booking);
+
+        return bookingMapper.mapToResponse(savedBook);
+    }
+
+    private void validateWithinBookingWindow(LocalDateTime now, Booking booking) {
+        if (now.isBefore(booking.getStartTime())) {
+            throw new IllegalArgumentException("The booking cannot be accessed, as the period did not start yet");
+        } else if (now.isAfter(booking.getEndTime())) {
+            booking.setBookingStatus(BookingStatus.CANCELLED);
+            bookingRepository.save(booking);
+            throw new IllegalArgumentException("The booking cannot be accessed, as the period has ended");
+        }
+    }
+
     private void checkOverlap(ParkingSpot spot, LocalDateTime start, LocalDateTime end) {
         boolean clash = bookingRepository.existsByParkingSpotAndBookingStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
                 spot,
@@ -142,32 +287,5 @@ public class BookingService {
             );
         }
     }
-
-    public BookingResponse park(Long id) {
-        Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Booking with the following id not found: " + id)
-                );
-        if (!booking.getBookingStatus().equals(BookingStatus.RESERVED)) {
-            throw new ResourceAlreadyUsedException("Booking " + id + " cannot be parked because its status is "
-                    + booking.getBookingStatus());
-        }
-
-        LocalDateTime now = LocalDateTime.now();
-        if (now.isBefore(booking.getStartTime())) {
-            throw new IllegalArgumentException("The booking cannot be accessed, as the period did not start yet");
-        } else if (now.isAfter(booking.getEndTime())) {
-            booking.setBookingStatus(BookingStatus.CANCELLED);
-            bookingRepository.save(booking);
-            throw new IllegalArgumentException("The booking cannot be accessed, as the period did has ended");
-        }
-
-        booking.setBookingStatus(BookingStatus.ACTIVE);
-        booking.setActualStartTime(now);
-        Booking savedBook = bookingRepository.save(booking);
-
-        return bookingMapper.mapToResponse(savedBook);
-    }
-
 }
 

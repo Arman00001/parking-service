@@ -42,5 +42,22 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.park(id));
     }
 
+    /**
+     * Complete a booking (release a spot) when the resident leaves
+     */
+    @PutMapping("/{id}/release")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseEntity<BookingResponse> release(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(bookingService.release(id));
+    }
+
+    /**
+     * Cancel a future booking
+     */
+    @PutMapping("/{id}/cancel")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseEntity<BookingResponse> cancel(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(bookingService.cancel(id));
+    }
 
 }
